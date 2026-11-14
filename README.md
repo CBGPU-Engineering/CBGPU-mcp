@@ -13,7 +13,7 @@ Copy this into Codex or Claude Code **on the computer where you use that agent**
 Install and configure the official CBGPU deployment MCP for this coding agent.
 Read https://github.com/CBGPU-Engineering/CBGPU-mcp/blob/main/README.md first.
 Check this computer's OS, Node.js (22+) and available coding-agent CLI.
-Use the pinned v1.0.1 GitHub release package from that README.
+Use the pinned v1.0.2 GitHub release package from that README.
 Register a USER-SCOPED stdio MCP named cbgpu-deploy for the coding agent I am using;
 keep existing MCP settings. Use an absolute executable path if necessary.
 Run the separate login command in an interactive terminal so I can enter my own
@@ -33,6 +33,8 @@ CBGPU Deploy MCP lets Codex, Claude Code and other MCP clients deploy GitHub
 frontends, backend servers, Docker images and Docker Compose stacks through the
 same authenticated APIs as the [CBGPU deployment console](https://researcher.cbgpu.com/deploy).
 The MCP runs locally over stdio; deployments run on CBGPU.
+The release bundles its runtime dependencies, so users do not need a separate
+MCP SDK installation. Bundled licenses are included in `dist/THIRD_PARTY_NOTICES.txt`.
 
 ## Connect manually
 
@@ -45,7 +47,7 @@ flow first. This release does not implement browser OAuth login.
 Run this in your own interactive terminal. The password is hidden and is never saved:
 
 ```bash
-npx --yes --package=https://github.com/CBGPU-Engineering/CBGPU-mcp/releases/download/v1.0.1/cbgpu-deploy-mcp-1.0.1.tgz cbgpu-deploy-mcp login
+npx --yes --package=https://github.com/CBGPU-Engineering/CBGPU-mcp/releases/download/v1.0.2/cbgpu-deploy-mcp-1.0.2.tgz cbgpu-deploy-mcp login
 ```
 
 ### 2. Register with your coding agent
@@ -53,13 +55,13 @@ npx --yes --package=https://github.com/CBGPU-Engineering/CBGPU-mcp/releases/down
 **Codex:**
 
 ```bash
-codex mcp add cbgpu-deploy -- npx --yes --package=https://github.com/CBGPU-Engineering/CBGPU-mcp/releases/download/v1.0.1/cbgpu-deploy-mcp-1.0.1.tgz cbgpu-deploy-mcp
+codex mcp add cbgpu-deploy -- npx --yes --package=https://github.com/CBGPU-Engineering/CBGPU-mcp/releases/download/v1.0.2/cbgpu-deploy-mcp-1.0.2.tgz cbgpu-deploy-mcp
 ```
 
 **Claude Code:**
 
 ```bash
-claude mcp add --scope user cbgpu-deploy -- npx --yes --package=https://github.com/CBGPU-Engineering/CBGPU-mcp/releases/download/v1.0.1/cbgpu-deploy-mcp-1.0.1.tgz cbgpu-deploy-mcp
+claude mcp add --scope user cbgpu-deploy -- npx --yes --package=https://github.com/CBGPU-Engineering/CBGPU-mcp/releases/download/v1.0.2/cbgpu-deploy-mcp-1.0.2.tgz cbgpu-deploy-mcp
 ```
 
 Restart the agent or reconnect its MCP servers after registering. On Windows,
@@ -77,7 +79,7 @@ not provide Windows ACL enforcement.
       "command": "npx",
       "args": [
         "--yes",
-        "--package=https://github.com/CBGPU-Engineering/CBGPU-mcp/releases/download/v1.0.1/cbgpu-deploy-mcp-1.0.1.tgz",
+        "--package=https://github.com/CBGPU-Engineering/CBGPU-mcp/releases/download/v1.0.2/cbgpu-deploy-mcp-1.0.2.tgz",
         "cbgpu-deploy-mcp"
       ]
     }
@@ -155,8 +157,8 @@ the deployment tools listed above. Treat the session file as sensitive.
 Check authentication or revoke **only this MCP login**, leaving browser/app sessions alone:
 
 ```bash
-npx --yes --package=https://github.com/CBGPU-Engineering/CBGPU-mcp/releases/download/v1.0.1/cbgpu-deploy-mcp-1.0.1.tgz cbgpu-deploy-mcp status
-npx --yes --package=https://github.com/CBGPU-Engineering/CBGPU-mcp/releases/download/v1.0.1/cbgpu-deploy-mcp-1.0.1.tgz cbgpu-deploy-mcp logout
+npx --yes --package=https://github.com/CBGPU-Engineering/CBGPU-mcp/releases/download/v1.0.2/cbgpu-deploy-mcp-1.0.2.tgz cbgpu-deploy-mcp status
+npx --yes --package=https://github.com/CBGPU-Engineering/CBGPU-mcp/releases/download/v1.0.2/cbgpu-deploy-mcp-1.0.2.tgz cbgpu-deploy-mcp logout
 ```
 
 `CBGPU_ACCESS_TOKEN` optionally supplies an existing short-lived user JWT instead
@@ -172,14 +174,17 @@ only CBGPU's public publishable browser key, not a privileged server key.
 npm ci
 npm run check
 npm test
-npm audit --omit=dev
+npm run build
+npm run test:package
+npm audit
 npm pack --dry-run
 ```
 
 Tests use the actual MCP SDK transport and cover tool routing, validation,
 Compose diagnostics, environment preservation, permissions, refresh races,
 private session storage, redirect refusal and logout. CI runs on Linux, macOS
-and Windows. No real user deployments are created by these tests.
+and Windows with Node.js 22 and 24. The packed release is installed into a fresh
+temporary directory and tested without an external SDK installation. No real user deployments are created by these tests.
 
 Sources: [MCP SDK](https://github.com/modelcontextprotocol/typescript-sdk),
 [Codex MCP](https://developers.openai.com/codex/mcp/),
