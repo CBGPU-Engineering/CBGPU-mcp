@@ -13,7 +13,7 @@ Copy this into Codex or Claude Code **on the computer where you use that agent**
 Install and configure the official CBGPU deployment MCP for this coding agent.
 Read https://github.com/CBGPU-Engineering/CBGPU-mcp/blob/main/README.md first.
 Check this computer's OS, Node.js (22+) and available coding-agent CLI.
-Use the pinned v1.0.0 GitHub release package from that README.
+Use the pinned v1.0.1 GitHub release package from that README.
 Register a USER-SCOPED stdio MCP named cbgpu-deploy for the coding agent I am using;
 keep existing MCP settings. Use an absolute executable path if necessary.
 Run the separate login command in an interactive terminal so I can enter my own
@@ -45,7 +45,7 @@ flow first. This release does not implement browser OAuth login.
 Run this in your own interactive terminal. The password is hidden and is never saved:
 
 ```bash
-npx --yes --package=https://github.com/CBGPU-Engineering/CBGPU-mcp/releases/download/v1.0.0/cbgpu-deploy-mcp-1.0.0.tgz cbgpu-deploy-mcp login
+npx --yes --package=https://github.com/CBGPU-Engineering/CBGPU-mcp/releases/download/v1.0.1/cbgpu-deploy-mcp-1.0.1.tgz cbgpu-deploy-mcp login
 ```
 
 ### 2. Register with your coding agent
@@ -53,13 +53,13 @@ npx --yes --package=https://github.com/CBGPU-Engineering/CBGPU-mcp/releases/down
 **Codex:**
 
 ```bash
-codex mcp add cbgpu-deploy -- npx --yes --package=https://github.com/CBGPU-Engineering/CBGPU-mcp/releases/download/v1.0.0/cbgpu-deploy-mcp-1.0.0.tgz cbgpu-deploy-mcp
+codex mcp add cbgpu-deploy -- npx --yes --package=https://github.com/CBGPU-Engineering/CBGPU-mcp/releases/download/v1.0.1/cbgpu-deploy-mcp-1.0.1.tgz cbgpu-deploy-mcp
 ```
 
 **Claude Code:**
 
 ```bash
-claude mcp add --scope user cbgpu-deploy -- npx --yes --package=https://github.com/CBGPU-Engineering/CBGPU-mcp/releases/download/v1.0.0/cbgpu-deploy-mcp-1.0.0.tgz cbgpu-deploy-mcp
+claude mcp add --scope user cbgpu-deploy -- npx --yes --package=https://github.com/CBGPU-Engineering/CBGPU-mcp/releases/download/v1.0.1/cbgpu-deploy-mcp-1.0.1.tgz cbgpu-deploy-mcp
 ```
 
 Restart the agent or reconnect its MCP servers after registering. On Windows,
@@ -77,7 +77,7 @@ not provide Windows ACL enforcement.
       "command": "npx",
       "args": [
         "--yes",
-        "--package=https://github.com/CBGPU-Engineering/CBGPU-mcp/releases/download/v1.0.0/cbgpu-deploy-mcp-1.0.0.tgz",
+        "--package=https://github.com/CBGPU-Engineering/CBGPU-mcp/releases/download/v1.0.1/cbgpu-deploy-mcp-1.0.1.tgz",
         "cbgpu-deploy-mcp"
       ]
     }
@@ -155,8 +155,8 @@ the deployment tools listed above. Treat the session file as sensitive.
 Check authentication or revoke **only this MCP login**, leaving browser/app sessions alone:
 
 ```bash
-npx --yes --package=https://github.com/CBGPU-Engineering/CBGPU-mcp/releases/download/v1.0.0/cbgpu-deploy-mcp-1.0.0.tgz cbgpu-deploy-mcp status
-npx --yes --package=https://github.com/CBGPU-Engineering/CBGPU-mcp/releases/download/v1.0.0/cbgpu-deploy-mcp-1.0.0.tgz cbgpu-deploy-mcp logout
+npx --yes --package=https://github.com/CBGPU-Engineering/CBGPU-mcp/releases/download/v1.0.1/cbgpu-deploy-mcp-1.0.1.tgz cbgpu-deploy-mcp status
+npx --yes --package=https://github.com/CBGPU-Engineering/CBGPU-mcp/releases/download/v1.0.1/cbgpu-deploy-mcp-1.0.1.tgz cbgpu-deploy-mcp logout
 ```
 
 `CBGPU_ACCESS_TOKEN` optionally supplies an existing short-lived user JWT instead

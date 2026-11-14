@@ -65,7 +65,7 @@ test('401 refreshes once; 403 and ambiguous network failure never retry a deploy
  api.fetcher=async()=>json({},403);await assert.rejects(()=>api.request('/projects'),/permission/);assert.equal(refresh,1);
 });
 test('expired logout revokes only this session; deletion follows successful revoke',async t=>{
- const urls=[];const api=await fixture(t,async url=>{urls.push(url);return url.includes('refresh_token')?json({access_token:'fresh'}):json({});});
+ const urls=[];const api=await fixture(t,async url=>{urls.push(url);return url.includes('refresh_token')?json({access_token:'fresh'}):new Response(null,{status:204});});
  await api.prepare();await api.save({access_token:'old',refresh_token:'r',expires_at:1});await api.logout();assert(urls[1].endsWith('/logout?scope=local'));await assert.rejects(()=>stat(api.file),{code:'ENOENT'});
 });
 test('restricts destination, endpoints, credential files and output secrets',async t=>{

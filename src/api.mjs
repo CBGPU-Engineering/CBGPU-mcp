@@ -21,6 +21,7 @@ export class DeployAPI {
   }
   async json(endpoint, method = 'GET', body, headers = {}) {
     const response = await this.fetcher(this.base + endpoint, {method, headers: {'Content-Type': 'application/json', Origin: this.base, ...headers}, body: body === undefined ? undefined : JSON.stringify(body), redirect: 'error', signal: AbortSignal.timeout(30000)});
+    if (response.status === 204 && response.ok) return {};
     const text = await response.text();
     let data; try { data = JSON.parse(text); } catch { throw new ApiError(response.status, 'CBGPU returned a non-JSON response. Check service availability.'); }
     if (!response.ok) throw new ApiError(response.status, response.status === 401 ? 'Login expired or account unavailable. Run cbgpu-deploy-mcp login.' : response.status === 403 ? 'Your account does not have permission for this operation.' : response.status === 429 ? 'CBGPU rate limit reached. Wait before retrying.' : 'CBGPU request failed (' + response.status + '). Check the website project settings.');

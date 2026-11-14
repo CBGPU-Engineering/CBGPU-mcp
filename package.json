@@ -1,6 +1,6 @@
 {
   "name": "cbgpu-deploy-mcp",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "CBGPU frontend and server deployments for Codex and Claude Code",
   "type": "module",
   "bin": {
