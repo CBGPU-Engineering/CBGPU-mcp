@@ -1,0 +1,31 @@
+{
+  "name": "cbgpu-deploy-mcp",
+  "version": "1.0.0",
+  "description": "CBGPU frontend and server deployments for Codex and Claude Code",
+  "type": "module",
+  "bin": {
+    "cbgpu-deploy-mcp": "src/cli.mjs"
+  },
+  "files": [
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "test": "node --test",
+    "check": "node --check src/cli.mjs && node --check src/server.mjs && node --check src/api.mjs"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.32.2",
+    "proper-lockfile": "^4.1.2",
+    "zod": "^4.6.7"
+  },
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/CBGPU-Engineering/CBGPU-mcp.git"
+  }
+}
