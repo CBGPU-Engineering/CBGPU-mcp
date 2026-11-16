@@ -78,3 +78,4 @@ test('restricts destination, endpoints, credential files and output secrets',asy
  await writeFile(api.file,JSON.stringify({base:'https://other.com'}));await assert.rejects(()=>api.read(),/different/);
  const result=sanitize({env_vars:{FOO:'secret'},access_token:'secret',repository:'https://name:secret@github.com/x/y',logs:'ghp_abcdef123'});assert(!JSON.stringify(result).includes('secret'));assert(result&&typeof result==='object'&&'environment_keys' in result);assert.deepEqual(result.environment_keys,['FOO']);
 });
+test('opaque repository credentials in URL userinfo are never returned',()=>{const result=sanitize({repository:'https://opaque-legacy-credential@github.com/example/private'});assert(!JSON.stringify(result).includes('opaque-legacy-credential'));assert(JSON.stringify(result).includes('[REDACTED]@github.com'));});

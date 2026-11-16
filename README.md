@@ -5,6 +5,49 @@
 [![MCP](https://img.shields.io/badge/MCP-stdio-111111)](https://modelcontextprotocol.io/)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-D22128)](./LICENSE)
 
+## Native Rust candidate
+
+A native Rust implementation now provides the same 17 deployment/environment
+tools and stdio protocol. It does not invoke the TypeScript server, Node.js or a
+Python helper. The currently published **v1.1.0 npm entry remains unchanged**
+until native release artifacts pass the Linux, macOS and Windows CI checks.
+There is no automatic download or npm publication in the candidate build.
+
+```bash
+cargo test --locked
+cargo clippy --all-targets --locked -- -D warnings
+cargo build --release --locked
+target/release/cbgpu-deploy-mcp --help
+target/release/cbgpu-deploy-mcp login
+```
+
+On Windows the executable ends in `.exe`. The native binary needs no Node.js;
+Node.js is used only by the optional compatibility launcher and SDK tests.
+
+The native client retains the existing origin-bound `session.json` format,
+configuration variables and lock-directory protocol, so a legacy client and a
+native client serialize refreshes instead of racing. Unix session files are
+owner-only; the Windows candidate protects the session directory/file ACL and
+uses an atomic Windows replacement for credential updates. Passwords remain
+interactive, hidden and unsaved. Like the current release, the native candidate
+does not invent a browser/device OAuth endpoint that the deployment API does
+not currently provide.
+
+For a local thin-launcher candidate and actual SDK interoperability tests:
+
+```bash
+npm ci --ignore-scripts
+npm run build:native
+node dist/native-cli.mjs --help
+node test/native-stdio.ts target/release/cbgpu-deploy-mcp
+```
+
+`build:native` compiles only this computer's executable and records its SHA-256
+in `dist/native/manifest.json`. This is not a cross-platform release package;
+verified release artifacts must be assembled before changing the published npm
+entry. An explicit absolute `CBGPU_MCP_NATIVE_BINARY` may select a locally built
+binary for the candidate launcher. Build outputs and credentials stay outside Git.
+
 ## Ask your coding agent to set it up
 
 Copy this into Codex or Claude Code **on the computer where you use that agent**:

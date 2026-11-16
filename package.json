@@ -19,7 +19,10 @@
     "check": "tsc --noEmit && node scripts/check-source-languages.ts",
     "build": "node scripts/build.ts",
     "prepack": "npm run build",
-    "test:package": "node scripts/verify-package.ts"
+    "test:package": "node scripts/verify-package.ts",
+    "build:native": "node scripts/build-native.ts",
+    "test:native": "node test/native-stdio.ts",
+    "schema:native": "node scripts/export-native-schema.ts"
   },
   "license": "Apache-2.0",
   "repository": {

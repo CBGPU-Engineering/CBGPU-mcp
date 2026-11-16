@@ -1,0 +1,46 @@
+[
+  {
+    "input": "export\tTOKEN = value # comment\n",
+    "expected": {
+      "TOKEN": "value"
+    }
+  },
+  {
+    "input": "TOKEN: value\n",
+    "expected": {
+      "TOKEN": "value"
+    }
+  },
+  {
+    "input": "EMPTY=\r\nPLAIN=  foo bar  # comment\n",
+    "expected": {
+      "EMPTY": "",
+      "PLAIN": "foo bar"
+    }
+  },
+  {
+    "input": "A=' literal ${KEEP} $(cmd) '\nB=`multiple\nlines`\n",
+    "expected": {
+      "A": " literal ${KEEP} $(cmd) ",
+      "B": "multiple\nlines"
+    }
+  },
+  {
+    "input": "A=\"a\\\"b\"\n",
+    "expected": {
+      "A": "a\\\"b"
+    }
+  },
+  {
+    "input": "A='a\\'b'\n",
+    "expected": {
+      "A": "a\\'b"
+    }
+  },
+  {
+    "input": "A=\"first\r\nsecond\"\r\n",
+    "expected": {
+      "A": "first\nsecond"
+    }
+  }
+]
