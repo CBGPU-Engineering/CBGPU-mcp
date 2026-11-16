@@ -2,9 +2,9 @@
 import {createInterface} from 'node:readline/promises';
 import {Writable} from 'node:stream';
 import {StdioServerTransport} from '@modelcontextprotocol/sdk/server/stdio.js';
-import {DeployAPI,sessionPath} from './api.mjs';
-import {createServer} from './server.mjs';
-import {environmentCommand} from './environment.mjs';
+import {DeployAPI,sessionPath} from './api.ts';
+import {createServer} from './server.ts';
+import {environmentCommand} from './environment.ts';
 const api = new DeployAPI();
 async function login() {
  if (!process.stdin.isTTY || !process.stderr.isTTY) throw Error('Run login in an interactive terminal. Never supply your password in a prompt, command argument or MCP configuration.');
@@ -28,4 +28,4 @@ try {
  else if(command==='--help'||command==='help')console.error('CBGPU Deploy MCP\n  cbgpu-deploy-mcp login    Sign in interactively\n  cbgpu-deploy-mcp status   Check authentication\n  cbgpu-deploy-mcp logout   Revoke this login\n  cbgpu-deploy-mcp env      List/set/unset deployment environment variables\n  cbgpu-deploy-mcp          Run the stdio MCP server\n\nRequires Node.js 22+. Works with Codex, Claude Code, and other stdio MCP clients.');
  else if(command==='serve')await createServer(api).connect(new StdioServerTransport());
  else throw Error('Unknown command. Run cbgpu-deploy-mcp --help.');
-} catch(error){console.error(error.message);process.exitCode=1;}
+} catch(error){console.error(error instanceof Error ? error.message : "Unexpected CLI failure");process.exitCode=1;}

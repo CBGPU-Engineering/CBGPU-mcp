@@ -12,14 +12,14 @@
     "LICENSE"
   ],
   "engines": {
-    "node": ">=22"
+    "node": ">=22.18"
   },
   "scripts": {
-    "test": "node --test",
-    "check": "node --check src/cli.mjs && node --check src/server.mjs && node --check src/api.mjs",
-    "build": "node scripts/build.mjs",
+    "test": "node --test test/*.test.ts",
+    "check": "tsc --noEmit && node scripts/check-source-languages.ts",
+    "build": "node scripts/build.ts",
     "prepack": "npm run build",
-    "test:package": "node scripts/verify-package.mjs"
+    "test:package": "node scripts/verify-package.ts"
   },
   "license": "Apache-2.0",
   "repository": {
@@ -28,9 +28,12 @@
   },
   "devDependencies": {
     "@modelcontextprotocol/sdk": "1.32.2",
+    "@types/node": "22.20.5",
+    "@types/proper-lockfile": "4.1.4",
     "dotenv": "^18.0.10",
     "esbuild": "^0.28.2",
     "proper-lockfile": "^4.1.2",
+    "typescript": "5.9.3",
     "zod": "^4.6.7"
   }
 }

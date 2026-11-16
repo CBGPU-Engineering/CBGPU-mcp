@@ -2,7 +2,7 @@ import {build} from 'esbuild';
 import {builtinModules} from 'node:module';
 import {readFile,writeFile,mkdir,chmod,readdir} from 'node:fs/promises';
 import path from 'node:path';
-const result=await build({entryPoints:['src/cli.mjs'],bundle:true,platform:'node',target:'node22',format:'esm',outfile:'dist/cli.mjs',metafile:true,legalComments:'linked',banner:{js:'import { createRequire as __cbgpuCreateRequire } from "node:module"; const require = __cbgpuCreateRequire(import.meta.url);'}});
+const result=await build({entryPoints:['src/cli.ts'],bundle:true,platform:'node',target:'node22',format:'esm',outfile:'dist/cli.mjs',metafile:true,legalComments:'linked',banner:{js:'import { createRequire as __cbgpuCreateRequire } from "node:module"; const require = __cbgpuCreateRequire(import.meta.url);'}});
 const packages=new Map();
 for(const name of Object.keys(result.metafile.inputs)){
  if(!name.includes('node_modules/'))continue;
