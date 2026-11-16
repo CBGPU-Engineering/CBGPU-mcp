@@ -39,3 +39,10 @@ test('MCP env file tool and CLI import keep file contents out of responses',asyn
  const cli=await environmentCommand(api,['set','server',id,'--file',file]);assert.equal(cli.ok,true);assert(!JSON.stringify(cli).includes('do-not-expose-this'));
  await environmentCommand(api,['unset','server',id,'--keys','API_KEY']);assert.equal(calls.at(-1)[1],'PATCH');
 });
+test('new frontend and Compose projects can receive env before their first deployment',async t=>{
+ const dir=await fixture(t),file=path.join(dir,'.env');await writeFile(file,'DATABASE_URL=private-database\n');const calls=[];
+ const api={request:async(...args)=>{calls.push(args);return{project:{id}};}};
+ const server=createServer(api),client=new Client({name:'create-env-test',version:'1'}),[a,b]=InMemoryTransport.createLinkedPair();await Promise.all([server.connect(a),client.connect(b)]);t.after(()=>Promise.all([client.close(),server.close()]));
+ let result=await client.callTool({name:'create_frontend',arguments:{slug:'env-test',repository:'https://github.com/example/app',env_file:file}});assert(!result.isError);assert.equal(calls[0][2].env.DATABASE_URL,'private-database');assert(!JSON.stringify(result).includes('private-database'));
+ result=await client.callTool({name:'create_server',arguments:{name:'Env server',mode:'compose',settings:{git_url:'https://github.com/example/app',root_directory:'server'},env_file:file}});assert(!result.isError);assert.equal(calls[1][2].env_vars.DATABASE_URL,'private-database');assert.equal(calls[1][2].env_vars.CBGPU_DEPLOY_ENGINE,'compose');
+});

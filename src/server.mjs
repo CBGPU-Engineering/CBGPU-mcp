@@ -1,7 +1,7 @@
 import {McpServer} from '@modelcontextprotocol/sdk/server/mcp.js';
 import {z} from 'zod';
 import {sanitize} from './api.mjs';
-import {environmentFile,listEnvironment,setEnvironment} from './environment.mjs';
+import {environmentFile,environmentChanges,listEnvironment,setEnvironment} from './environment.mjs';
 const id = z.string().uuid();
 const kind = z.enum(['frontend','server']);
 const directory = z.string().max(200).refine(s => !s.startsWith('/') && !s.includes('\\') && !s.split('/').includes('..') && !/[\0\r\n]/.test(s), 'Use a relative directory inside the repository');
@@ -41,12 +41,13 @@ export function createServer(api) {
  const projectPath = (k, value) => k === 'frontend' ? '/projects/'+value : '/servers/projects/'+value;
  tool('list_projects','List owned and shared CBGPU frontend or server projects. Environment values are omitted.',{kind}, a => api.request(a.kind === 'frontend' ? '/projects' : '/servers/projects'),true);
  tool('get_project','Get project settings, status and frontend deployment history. Does not expose environment values.',{kind,project_id:id},a => api.request(projectPath(a.kind,a.project_id)),true);
- tool('create_frontend','Create and immediately deploy a GitHub frontend. Defaults to branch main, framework auto. Returns an asynchronous deployment ID; poll its status. Set environment variables using the environment tools before an explicit redeploy.',{slug,repository,...Object.fromEntries(Object.entries(frontendSettings).filter(([k])=>k!=='repository'))},a => api.request('/projects','POST',a));
+ tool('create_frontend','Create and immediately deploy a GitHub frontend. Defaults to branch main, framework auto. Returns an asynchronous deployment ID; poll its status. Set environment variables using the environment tools before an explicit redeploy.',{slug,repository,...Object.fromEntries(Object.entries(frontendSettings).filter(([k])=>k!=='repository')),env_file:z.string().optional()},async a => {const {env_file,...input}=a;if(env_file)input.env=environmentChanges('frontend',await environmentFile(env_file));return api.request('/projects','POST',input)});
  tool('update_frontend','Update frontend repository, subfolder and build settings. Changes apply on the next deployment; call redeploy explicitly.',{project_id:id,settings:z.object(frontendSettings).strict()},a => api.request('/projects/'+a.project_id,'PATCH',a.settings));
- tool('create_server','Create a GitHub, Docker image or Docker Compose server. Starts asynchronously without admin approval. Compose preserves persistent volumes. Defaults to private access. Public exposure requires access_scope public; domain is server-<first8id>.server.cbgpu.com until set_server_domain.',{name:z.string().min(1).max(100),mode:z.enum(['git','docker','compose']),settings:z.object(serverSettings).strict()},async a => {
+ tool('create_server','Create a GitHub, Docker image or Docker Compose server. Starts asynchronously without admin approval. Compose preserves persistent volumes. Defaults to private access. Public exposure requires access_scope public; domain is server-<first8id>.server.cbgpu.com until set_server_domain.',{name:z.string().min(1).max(100),mode:z.enum(['git','docker','compose']),settings:z.object(serverSettings).strict(),env_file:z.string().optional()},async a => {
   if (a.mode !== 'docker' && !a.settings.git_url) throw Error('git_url is required for Git and Compose.');
   if (a.mode === 'docker' && !a.settings.docker_image) throw Error('docker_image is required for Docker.');
   const payload=serverPayload(a.settings);
+  if(a.env_file)payload.env_vars={...environmentChanges('server',await environmentFile(a.env_file)),...payload.env_vars};
   payload.name=a.name; payload.deploy_type=a.mode==='docker'?'docker':'git';
   if(a.mode==='compose'){payload.env_vars={...payload.env_vars,CBGPU_DEPLOY_ENGINE:'compose',CBGPU_STORAGE_GB:String(a.settings.storage_gb||40)};delete payload.env_vars.CBGPU_RUNTIME_PRESET;payload.run_command='docker compose up -d';}
   return api.request('/servers/projects','POST',payload);

@@ -152,6 +152,8 @@ For a few non-secret values, `set_environment` accepts `variables` as an object;
 set a key to `null` to remove that variable. Project owners and editors can change
 environment variables; viewers cannot. Existing keys are preserved. CBGPU's
 internal `CBGPU_` configuration remains managed through project settings tools.
+Both `create_frontend` and `create_server` also accept an optional `env_file`
+absolute path, so required variables are present on the **first** deployment.
 File imports do not delete keys absent from that file. Dotenv quotes, comments,
 empty strings and multiline values are supported; `${VAR}` and `$(command)` are
 literal strings, with **no shell execution or environment expansion**.
