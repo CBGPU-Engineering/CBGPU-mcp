@@ -4,6 +4,7 @@ import {Writable} from 'node:stream';
 import {StdioServerTransport} from '@modelcontextprotocol/sdk/server/stdio.js';
 import {DeployAPI,sessionPath} from './api.mjs';
 import {createServer} from './server.mjs';
+import {environmentCommand} from './environment.mjs';
 const api = new DeployAPI();
 async function login() {
  if (!process.stdin.isTTY || !process.stderr.isTTY) throw Error('Run login in an interactive terminal. Never supply your password in a prompt, command argument or MCP configuration.');
@@ -21,9 +22,10 @@ async function login() {
 try {
  const command = process.argv[2] || 'serve';
  if(command==='login') await login();
+ else if(command==='env'){console.error(JSON.stringify(await environmentCommand(api,process.argv.slice(3)),null,2));}
  else if(command==='logout'){await api.logout();console.error('CBGPU MCP session revoked and removed.');}
  else if(command==='status'){const data=await api.request('/projects');console.error('Authenticated. Accessible frontend projects: '+data.projects.length);}
- else if(command==='--help'||command==='help')console.error('CBGPU Deploy MCP\n  cbgpu-deploy-mcp login    Sign in interactively\n  cbgpu-deploy-mcp status   Check authentication\n  cbgpu-deploy-mcp logout   Revoke this login\n  cbgpu-deploy-mcp          Run the stdio MCP server\n\nRequires Node.js 22+. Works with Codex, Claude Code, and other stdio MCP clients.');
+ else if(command==='--help'||command==='help')console.error('CBGPU Deploy MCP\n  cbgpu-deploy-mcp login    Sign in interactively\n  cbgpu-deploy-mcp status   Check authentication\n  cbgpu-deploy-mcp logout   Revoke this login\n  cbgpu-deploy-mcp env      List/set/unset deployment environment variables\n  cbgpu-deploy-mcp          Run the stdio MCP server\n\nRequires Node.js 22+. Works with Codex, Claude Code, and other stdio MCP clients.');
  else if(command==='serve')await createServer(api).connect(new StdioServerTransport());
  else throw Error('Unknown command. Run cbgpu-deploy-mcp --help.');
 } catch(error){console.error(error.message);process.exitCode=1;}

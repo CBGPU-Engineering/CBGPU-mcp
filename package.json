@@ -1,6 +1,6 @@
 {
   "name": "cbgpu-deploy-mcp",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "description": "CBGPU frontend and server deployments for Codex and Claude Code",
   "type": "module",
   "bin": {
@@ -28,8 +28,9 @@
   },
   "devDependencies": {
     "@modelcontextprotocol/sdk": "1.32.2",
+    "dotenv": "^18.0.10",
+    "esbuild": "^0.28.2",
     "proper-lockfile": "^4.1.2",
-    "zod": "^4.6.7",
-    "esbuild": "^0.28.2"
+    "zod": "^4.6.7"
   }
 }

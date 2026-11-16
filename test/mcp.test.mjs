@@ -15,7 +15,7 @@ async function clientFor(t,api){const server=createServer(api),client=new Client
 test('MCP discovery, inputs and tools execute through real SDK transport',async t=>{
  const calls=[];const client=await clientFor(t,{request:async(...args)=>{calls.push(args);return{projects:[],env_vars:{SECRET:'hidden'}};}});
  const tools=(await client.listTools()).tools;
- assert.equal(tools.length,14);assert.equal(tools.find(t=>t.name==='list_projects').annotations.readOnlyHint,true);
+ assert.equal(tools.length,17);assert.equal(tools.find(t=>t.name==='list_projects').annotations.readOnlyHint,true);
  assert(!tools.some(t=>/shell|sql|delete|password/.test(t.name)));
  const response=await client.callTool({name:'list_projects',arguments:{kind:'frontend'}});
  assert.deepEqual(calls[0],['/projects']);assert(!response.content[0].text.includes('hidden'));

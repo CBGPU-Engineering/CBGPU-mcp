@@ -13,7 +13,7 @@ Copy this into Codex or Claude Code **on the computer where you use that agent**
 Install and configure the official CBGPU deployment MCP for this coding agent.
 Read https://github.com/CBGPU-Engineering/CBGPU-mcp/blob/main/README.md first.
 Check this computer's OS, Node.js (22+) and available coding-agent CLI.
-Use the pinned v1.0.2 GitHub release package from that README.
+Use the pinned v1.1.0 GitHub release package from that README.
 Register a USER-SCOPED stdio MCP named cbgpu-deploy for the coding agent I am using;
 keep existing MCP settings. Use an absolute executable path if necessary.
 Run the separate login command in an interactive terminal so I can enter my own
@@ -26,7 +26,7 @@ After setup, report whether login succeeded and whether the agent needs restarti
 When I later ask to deploy, inspect my repository and the existing CBGPU projects,
 select the correct branch and root directory, then create or update that project.
 Poll status and logs until it is ready or has failed; accepted/queued is not success.
-Never copy local .env files or secrets into chat or MCP arguments.
+When I authorize an env file for deployment, use set_environment_from_file with its absolute path. Never print its contents or put login credentials in tool arguments.
 ```
 
 CBGPU Deploy MCP lets Codex, Claude Code and other MCP clients deploy GitHub
@@ -47,7 +47,7 @@ flow first. This release does not implement browser OAuth login.
 Run this in your own interactive terminal. The password is hidden and is never saved:
 
 ```bash
-npx --yes --package=https://github.com/CBGPU-Engineering/CBGPU-mcp/releases/download/v1.0.2/cbgpu-deploy-mcp-1.0.2.tgz cbgpu-deploy-mcp login
+npx --yes --package=https://github.com/CBGPU-Engineering/CBGPU-mcp/releases/download/v1.1.0/cbgpu-deploy-mcp-1.1.0.tgz cbgpu-deploy-mcp login
 ```
 
 ### 2. Register with your coding agent
@@ -55,13 +55,13 @@ npx --yes --package=https://github.com/CBGPU-Engineering/CBGPU-mcp/releases/down
 **Codex:**
 
 ```bash
-codex mcp add cbgpu-deploy -- npx --yes --package=https://github.com/CBGPU-Engineering/CBGPU-mcp/releases/download/v1.0.2/cbgpu-deploy-mcp-1.0.2.tgz cbgpu-deploy-mcp
+codex mcp add cbgpu-deploy -- npx --yes --package=https://github.com/CBGPU-Engineering/CBGPU-mcp/releases/download/v1.1.0/cbgpu-deploy-mcp-1.1.0.tgz cbgpu-deploy-mcp
 ```
 
 **Claude Code:**
 
 ```bash
-claude mcp add --scope user cbgpu-deploy -- npx --yes --package=https://github.com/CBGPU-Engineering/CBGPU-mcp/releases/download/v1.0.2/cbgpu-deploy-mcp-1.0.2.tgz cbgpu-deploy-mcp
+claude mcp add --scope user cbgpu-deploy -- npx --yes --package=https://github.com/CBGPU-Engineering/CBGPU-mcp/releases/download/v1.1.0/cbgpu-deploy-mcp-1.1.0.tgz cbgpu-deploy-mcp
 ```
 
 Restart the agent or reconnect its MCP servers after registering. On Windows,
@@ -79,7 +79,7 @@ not provide Windows ACL enforcement.
       "command": "npx",
       "args": [
         "--yes",
-        "--package=https://github.com/CBGPU-Engineering/CBGPU-mcp/releases/download/v1.0.2/cbgpu-deploy-mcp-1.0.2.tgz",
+        "--package=https://github.com/CBGPU-Engineering/CBGPU-mcp/releases/download/v1.1.0/cbgpu-deploy-mcp-1.1.0.tgz",
         "cbgpu-deploy-mcp"
       ]
     }
@@ -106,7 +106,7 @@ Push local changes to GitHub before asking to redeploy: builds fetch the remote
 branch, not uncommitted files on your computer. Frontend production URLs use
 `<slug>.front.cbgpu.com`; server URLs use `<slug>.server.cbgpu.com`.
 Private GitHub frontends can use a repository token configured in the website.
-The MCP deliberately has no tool for reading or setting secrets.
+Environment configuration is available through set_environment and set_environment_from_file. Prefer the file tool so secret values stay out of chat and tool arguments; results return variable names only.
 
 ## Tools
 
@@ -126,6 +126,9 @@ The MCP deliberately has no tool for reading or setting secrets.
 | `add_domain` | Attach a custom domain; does not change DNS at your registrar |
 | `verify_domain` | Check the domain ID returned by `add_domain`/`list_domains` |
 | `list_collaborators` | Members and current account role |
+| `list_environment` | Variable names only |
+| `set_environment` | Add/update selected variables; null removes a variable |
+| `set_environment_from_file` | Import the specifically authorized local dotenv file without returning values |
 
 Server `settings.runtime` is the legacy compatibility field. For newer runtimes,
 use `settings.runtime_preset`: `node22`, `node20`, `node18`, `python312`,
@@ -135,6 +138,36 @@ Compose additionally accepts `compose_file`, `gateway_service` and `storage_gb`
 (40–200 GB). Existing website validation and capacity limits still apply.
 Some non-Compose projects do not expose runtime logs through the public API;
 this MCP reports that explicitly rather than fabricating logs or readiness.
+
+## Environment variables from an agent or CLI
+
+Ask your agent: “Use this project's `.env.production` to configure my CBGPU server.
+Keep other variables, then redeploy and check its logs.” The agent can call
+`set_environment_from_file` with `kind`, `project_id` and the absolute local
+`env_file` path. The file is read on the **computer running the MCP**, parsed
+locally and sent over HTTPS to the existing authenticated deployment API. The
+tool returns updated/removed variable names, never their values.
+
+For a few non-secret values, `set_environment` accepts `variables` as an object;
+set a key to `null` to remove that variable. Project owners and editors can change
+environment variables; viewers cannot. Existing keys are preserved. CBGPU's
+internal `CBGPU_` configuration remains managed through project settings tools.
+File imports do not delete keys absent from that file. Dotenv quotes, comments,
+empty strings and multiline values are supported; `${VAR}` and `$(command)` are
+literal strings, with **no shell execution or environment expansion**.
+
+Direct CLI, after login:
+
+```bash
+npx --yes --package=https://github.com/CBGPU-Engineering/CBGPU-mcp/releases/download/v1.1.0/cbgpu-deploy-mcp-1.1.0.tgz cbgpu-deploy-mcp env list server PROJECT_ID
+npx --yes --package=https://github.com/CBGPU-Engineering/CBGPU-mcp/releases/download/v1.1.0/cbgpu-deploy-mcp-1.1.0.tgz cbgpu-deploy-mcp env set server PROJECT_ID --file .env.production
+npx --yes --package=https://github.com/CBGPU-Engineering/CBGPU-mcp/releases/download/v1.1.0/cbgpu-deploy-mcp-1.1.0.tgz cbgpu-deploy-mcp env unset server PROJECT_ID --keys OLD_KEY,UNUSED_KEY
+```
+
+Use `frontend` instead of `server` for frontend projects. Saved environment changes
+apply on the **next deployment**; call `redeploy` when ready. The server API uses
+its existing read/merge/write behavior, so avoid simultaneous environment edits
+from multiple clients. Upload only the file and keys intended for this project.
 
 ## Sessions and permissions
 
@@ -157,8 +190,8 @@ the deployment tools listed above. Treat the session file as sensitive.
 Check authentication or revoke **only this MCP login**, leaving browser/app sessions alone:
 
 ```bash
-npx --yes --package=https://github.com/CBGPU-Engineering/CBGPU-mcp/releases/download/v1.0.2/cbgpu-deploy-mcp-1.0.2.tgz cbgpu-deploy-mcp status
-npx --yes --package=https://github.com/CBGPU-Engineering/CBGPU-mcp/releases/download/v1.0.2/cbgpu-deploy-mcp-1.0.2.tgz cbgpu-deploy-mcp logout
+npx --yes --package=https://github.com/CBGPU-Engineering/CBGPU-mcp/releases/download/v1.1.0/cbgpu-deploy-mcp-1.1.0.tgz cbgpu-deploy-mcp status
+npx --yes --package=https://github.com/CBGPU-Engineering/CBGPU-mcp/releases/download/v1.1.0/cbgpu-deploy-mcp-1.1.0.tgz cbgpu-deploy-mcp logout
 ```
 
 `CBGPU_ACCESS_TOKEN` optionally supplies an existing short-lived user JWT instead
@@ -184,7 +217,7 @@ Tests use the actual MCP SDK transport and cover tool routing, validation,
 Compose diagnostics, environment preservation, permissions, refresh races,
 private session storage, redirect refusal and logout. CI runs on Linux, macOS
 and Windows with Node.js 22 and 24. The packed release is installed into a fresh
-temporary directory and tested without an external SDK installation. No real user deployments are created by these tests.
+temporary directory and tested without an external SDK installation. No real user deployments are created by these tests. Environment tests also verify dotenv parsing, owner/editor checks, viewer rejection, preservation of system settings and secret-free results.
 
 Sources: [MCP SDK](https://github.com/modelcontextprotocol/typescript-sdk),
 [Codex MCP](https://developers.openai.com/codex/mcp/),
