@@ -22,7 +22,8 @@
     "test:package": "node scripts/verify-package.ts",
     "build:native": "node scripts/build-native.ts",
     "test:native": "node test/native-stdio.ts",
-    "schema:native": "node scripts/export-native-schema.ts"
+    "schema:native": "node scripts/export-native-schema.ts",
+    "package:native": "node scripts/package-native-candidate.ts && node scripts/verify-native-candidate.ts"
   },
   "license": "Apache-2.0",
   "repository": {

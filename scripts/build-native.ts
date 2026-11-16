@@ -2,6 +2,7 @@
 import{spawnSync}from'node:child_process';import{mkdir,copyFile,readFile,writeFile,chmod,readdir,stat}from'node:fs/promises';import{build}from'esbuild';import{createHash}from'node:crypto';import path from'node:path';
 const rustc=process.env.RUSTC||(process.env.CARGO&&path.isAbsolute(process.env.CARGO)?path.join(path.dirname(process.env.CARGO),process.platform==='win32'?'rustc.exe':'rustc'):'rustc');
 const info=spawnSync(rustc,['-vV'],{encoding:'utf8',shell:false});const host=info.stdout?.match(/^host: ([A-Za-z0-9_.-]+)$/m)?.[1];if(info.status!==0||!host)throw Error('Cannot identify the native Rust build target.');if(process.env.CARGO_BUILD_TARGET&&process.env.CARGO_BUILD_TARGET!==host)throw Error('build:native packages this host only; cross-platform artifacts require release verification.');
+const rustArch=host.startsWith('x86_64-')?'x64':host.startsWith('aarch64-')?'arm64':null;if(rustArch!==process.arch)throw Error('Node and Rust host architectures differ; use matching toolchains before packaging.');
 const result=spawnSync(process.env.CARGO||'cargo',['build','--release','--locked'],{stdio:'inherit',shell:false});if(result.status!==0)process.exit(result.status||1);
 const platform=process.platform+'-'+process.arch,name=process.platform==='win32'?'cbgpu-deploy-mcp.exe':'cbgpu-deploy-mcp',directory=path.join('dist','native',platform);await mkdir(directory,{recursive:true});
 await copyFile(path.resolve(process.env.CARGO_TARGET_DIR||'target','release',name),path.join(directory,name));await chmod(path.join(directory,name),0o755);

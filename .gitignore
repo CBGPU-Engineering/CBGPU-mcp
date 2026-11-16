@@ -6,3 +6,5 @@ dist/
 
 # Native Rust build output.
 /target/
+
+/release-candidate/

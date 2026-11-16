@@ -48,6 +48,30 @@ verified release artifacts must be assembled before changing the published npm
 entry. An explicit absolute `CBGPU_MCP_NATIVE_BINARY` may select a locally built
 binary for the candidate launcher. Build outputs and credentials stay outside Git.
 
+CI produces immutable review bundles for **Linux x64 and ARM64, macOS Intel and
+Apple Silicon, and Windows x64**. The ARM64 lanes build and run tests on actual
+ARM64 runners; they do not mark an unexecuted cross-build as verified. An ARM64
+runner capacity failure leaves that architecture unverified and blocks its native
+activation. Raspberry Pi requires a 64-bit Linux OS and a sufficiently recent
+glibc for the Ubuntu 24.04 ARM64 artifact; older/32-bit systems keep the existing
+Node release or build Rust locally. Windows ARM64 is not yet a verified native
+target and keeps the Node release.
+
+After all native checks, `npm run package:native` creates an allowlisted `.tar.gz`
+containing the executable, checksum-verifying optional launcher, Apache license,
+third-party notices, binary SHA manifest and exact source/workflow metadata. CI
+uploads that archive with `SHA256SUMS` and `candidate.json`, using an immutable
+artifact name containing the source commit, platform and run attempt. The pinned
+upload action refuses replacement; artifacts expire after 30 days. Review them
+under the matching GitHub Actions run, check the source revision and checksums,
+then extract the archive. Candidate artifacts are not npm releases or signed
+production installers. No action downloads or installs them on users' computers.
+
+**Compatibility gate:** the npm bin/version remain the current Node entry until
+release review. Missing native targets must keep the legacy entry; a checksum
+failure must fail closed rather than execute a different or downloaded binary.
+Source publication and a green x64 job alone do not switch ARM users to native.
+
 ## Ask your coding agent to set it up
 
 Copy this into Codex or Claude Code **on the computer where you use that agent**:
