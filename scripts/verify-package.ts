@@ -24,7 +24,7 @@ try{
  const env: NodeJS.ProcessEnv={...process.env,XDG_CONFIG_HOME:path.join(temp,'config'),LOCALAPPDATA:path.join(temp,'config')};delete env.CBGPU_ACCESS_TOKEN;delete env.NODE_PATH;
  client=new Client({name:'isolated-package-test',version:'1'});
  await client.connect(new StdioClientTransport({command:process.execPath,args:[entry],cwd:temp,env:Object.fromEntries(Object.entries(env).filter((entry): entry is [string,string]=>entry[1]!==undefined)),stderr:'pipe'}));
- const {tools}=await client.listTools();assert.equal(tools.length,17);
+ const {tools}=await client.listTools();assert.equal(tools.length,19);
  const result=await client.callTool({name:'list_projects',arguments:{kind:'frontend'}});assert.equal(result.isError,true);assert(Array.isArray(result.content));assert(result.content[0].type==='text');assert(result.content[0].text.includes('login'));
  console.log('Packed release passed isolated install, CLI startup/login guard and stdio MCP discovery on '+process.version+' '+process.platform+'; no external SDK installed.');
 }finally{if(client)await client.close();await rm(temp,{recursive:true,force:true});}

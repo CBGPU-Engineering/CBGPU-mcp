@@ -7,9 +7,9 @@
 
 ## Native Rust candidate
 
-A native Rust implementation now provides the same 17 deployment/environment
+A native Rust implementation now provides the same 19 deployment, environment and terminal
 tools and stdio protocol. It does not invoke the TypeScript server, Node.js or a
-Python helper. The currently published **v1.1.0 npm entry remains unchanged**
+Python helper. The currently published **v1.2.0 npm entry remains unchanged**
 until native release artifacts pass the Linux, macOS and Windows CI checks.
 There is no automatic download or npm publication in the candidate build.
 
@@ -80,7 +80,7 @@ Copy this into Codex or Claude Code **on the computer where you use that agent**
 Install and configure the official CBGPU deployment MCP for this coding agent.
 Read https://github.com/CBGPU-Engineering/CBGPU-mcp/blob/main/README.md first.
 Check this computer's OS, Node.js (22+) and available coding-agent CLI.
-Use the pinned v1.1.0 GitHub release package from that README.
+Use the pinned v1.2.0 GitHub release package from that README.
 Register a USER-SCOPED stdio MCP named cbgpu-deploy for the coding agent I am using;
 keep existing MCP settings. Use an absolute executable path if necessary.
 Run the separate login command in an interactive terminal so I can enter my own
@@ -114,7 +114,7 @@ flow first. This release does not implement browser OAuth login.
 Run this in your own interactive terminal. The password is hidden and is never saved:
 
 ```bash
-npx --yes --package=https://github.com/CBGPU-Engineering/CBGPU-mcp/releases/download/v1.1.0/cbgpu-deploy-mcp-1.1.0.tgz cbgpu-deploy-mcp login
+npx --yes --package=https://github.com/CBGPU-Engineering/CBGPU-mcp/releases/download/v1.2.0/cbgpu-deploy-mcp-1.2.0.tgz cbgpu-deploy-mcp login
 ```
 
 ### 2. Register with your coding agent
@@ -122,13 +122,13 @@ npx --yes --package=https://github.com/CBGPU-Engineering/CBGPU-mcp/releases/down
 **Codex:**
 
 ```bash
-codex mcp add cbgpu-deploy -- npx --yes --package=https://github.com/CBGPU-Engineering/CBGPU-mcp/releases/download/v1.1.0/cbgpu-deploy-mcp-1.1.0.tgz cbgpu-deploy-mcp
+codex mcp add cbgpu-deploy -- npx --yes --package=https://github.com/CBGPU-Engineering/CBGPU-mcp/releases/download/v1.2.0/cbgpu-deploy-mcp-1.2.0.tgz cbgpu-deploy-mcp
 ```
 
 **Claude Code:**
 
 ```bash
-claude mcp add --scope user cbgpu-deploy -- npx --yes --package=https://github.com/CBGPU-Engineering/CBGPU-mcp/releases/download/v1.1.0/cbgpu-deploy-mcp-1.1.0.tgz cbgpu-deploy-mcp
+claude mcp add --scope user cbgpu-deploy -- npx --yes --package=https://github.com/CBGPU-Engineering/CBGPU-mcp/releases/download/v1.2.0/cbgpu-deploy-mcp-1.2.0.tgz cbgpu-deploy-mcp
 ```
 
 Restart the agent or reconnect its MCP servers after registering. On Windows,
@@ -146,7 +146,7 @@ not provide Windows ACL enforcement.
       "command": "npx",
       "args": [
         "--yes",
-        "--package=https://github.com/CBGPU-Engineering/CBGPU-mcp/releases/download/v1.1.0/cbgpu-deploy-mcp-1.1.0.tgz",
+        "--package=https://github.com/CBGPU-Engineering/CBGPU-mcp/releases/download/v1.2.0/cbgpu-deploy-mcp-1.2.0.tgz",
         "cbgpu-deploy-mcp"
       ]
     }
@@ -181,6 +181,8 @@ Environment configuration is available through set_environment and set_environme
 | --- | --- |
 | `list_projects` | Owned and shared frontend/server projects |
 | `get_project` | Settings, state and frontend deployment history |
+| `list_server_services` | List services in an owned, active Compose deployment |
+| `run_server_command` | Run one command in a selected Compose service and return its exit code and output |
 | `create_frontend` | GitHub repository, branch, root folder and build settings |
 | `update_frontend` | Change settings without starting a build |
 | `create_server` | Git, Docker image or Docker Compose; up to 4 cores and 16 GB RAM |
@@ -206,6 +208,20 @@ Compose additionally accepts `compose_file`, `gateway_service` and `storage_gb`
 Some non-Compose projects do not expose runtime logs through the public API;
 this MCP reports that explicitly rather than fabricating logs or readiness.
 
+## Server terminal from an agent
+
+Ask your agent to list the services in the Hermes server and run `pwd` in
+`/opt/data/workspace` on the `hermes` service. The MCP calls
+`list_server_services` and `run_server_command` using the project ID, service
+name and an argument list such as `["pwd"]`.
+
+Commands run one at a time per project, as a non-root container user, with a
+10-second limit. The service image needs `/usr/bin/timeout`. Supply numerical
+`uid` and `gid` if the service workspace is owned by another non-root user.
+Terminal access is available for project owners with active compute access on
+Docker Compose deployments. Git and Docker image deployments use their existing
+deployment controls. This command interface returns output after execution.
+
 ## Environment variables from an agent or CLI
 
 Ask your agent: “Use this project's `.env.production` to configure my CBGPU server.
@@ -228,9 +244,9 @@ literal strings, with **no shell execution or environment expansion**.
 Direct CLI, after login:
 
 ```bash
-npx --yes --package=https://github.com/CBGPU-Engineering/CBGPU-mcp/releases/download/v1.1.0/cbgpu-deploy-mcp-1.1.0.tgz cbgpu-deploy-mcp env list server PROJECT_ID
-npx --yes --package=https://github.com/CBGPU-Engineering/CBGPU-mcp/releases/download/v1.1.0/cbgpu-deploy-mcp-1.1.0.tgz cbgpu-deploy-mcp env set server PROJECT_ID --file .env.production
-npx --yes --package=https://github.com/CBGPU-Engineering/CBGPU-mcp/releases/download/v1.1.0/cbgpu-deploy-mcp-1.1.0.tgz cbgpu-deploy-mcp env unset server PROJECT_ID --keys OLD_KEY,UNUSED_KEY
+npx --yes --package=https://github.com/CBGPU-Engineering/CBGPU-mcp/releases/download/v1.2.0/cbgpu-deploy-mcp-1.2.0.tgz cbgpu-deploy-mcp env list server PROJECT_ID
+npx --yes --package=https://github.com/CBGPU-Engineering/CBGPU-mcp/releases/download/v1.2.0/cbgpu-deploy-mcp-1.2.0.tgz cbgpu-deploy-mcp env set server PROJECT_ID --file .env.production
+npx --yes --package=https://github.com/CBGPU-Engineering/CBGPU-mcp/releases/download/v1.2.0/cbgpu-deploy-mcp-1.2.0.tgz cbgpu-deploy-mcp env unset server PROJECT_ID --keys OLD_KEY,UNUSED_KEY
 ```
 
 Use `frontend` instead of `server` for frontend projects. Saved environment changes
@@ -242,7 +258,7 @@ from multiple clients. Upload only the file and keys intended for this project.
 
 The website checks account approval, active login sessions and existing project
 owner/editor/viewer permissions for every request. No internal deployment key,
-service-role key or arbitrary shell access is given to the agent.
+service-role key or host access is given to the agent.
 A login is a normal CBGPU account session, **not a separately scoped API token**.
 It is stored locally outside repositories and automatically refreshed, with a
 cross-process lock so Codex and Claude Code can run together. The MCP only exposes
@@ -259,8 +275,8 @@ the deployment tools listed above. Treat the session file as sensitive.
 Check authentication or revoke **only this MCP login**, leaving browser/app sessions alone:
 
 ```bash
-npx --yes --package=https://github.com/CBGPU-Engineering/CBGPU-mcp/releases/download/v1.1.0/cbgpu-deploy-mcp-1.1.0.tgz cbgpu-deploy-mcp status
-npx --yes --package=https://github.com/CBGPU-Engineering/CBGPU-mcp/releases/download/v1.1.0/cbgpu-deploy-mcp-1.1.0.tgz cbgpu-deploy-mcp logout
+npx --yes --package=https://github.com/CBGPU-Engineering/CBGPU-mcp/releases/download/v1.2.0/cbgpu-deploy-mcp-1.2.0.tgz cbgpu-deploy-mcp status
+npx --yes --package=https://github.com/CBGPU-Engineering/CBGPU-mcp/releases/download/v1.2.0/cbgpu-deploy-mcp-1.2.0.tgz cbgpu-deploy-mcp logout
 ```
 
 `CBGPU_ACCESS_TOKEN` optionally supplies an existing short-lived user JWT instead

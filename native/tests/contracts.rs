@@ -38,7 +38,7 @@ fn text(v: &Value) -> &str {
 #[test]
 fn schema_has_all_seventeen_actual_tools() {
     let tools = tools::definitions();
-    assert_eq!(tools.as_array().unwrap().len(), 17);
+    assert_eq!(tools.as_array().unwrap().len(), 19);
     for tool in tools.as_array().unwrap() {
         let name = tool["name"].as_str().unwrap();
         assert!(

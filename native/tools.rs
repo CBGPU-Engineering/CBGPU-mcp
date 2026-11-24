@@ -133,6 +133,23 @@ async fn execute(api: &dyn DeploymentClient, name: &str, a: &Value) -> Result<Va
             api.request(&project_path(kind()?, id()?)?, "GET", None)
                 .await
         }
+        "list_server_services" => {
+            api.request(&format!("/compose/{}/terminal", id()?), "GET", None)
+                .await
+        }
+        "run_server_command" => {
+            let mut body = a
+                .as_object()
+                .cloned()
+                .ok_or_else(|| Failure::new("Invalid command."))?;
+            body.remove("project_id");
+            api.request(
+                &format!("/compose/{}/terminal", id()?),
+                "POST",
+                Some(Value::Object(body)),
+            )
+            .await
+        }
         "create_frontend" => {
             let mut p = a.as_object().unwrap().clone();
             p.remove("env_file");
