@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-/** Candidate launcher only. The published 1.1.0 entry remains unchanged until native artifacts pass all OS checks. */
+/** Candidate launcher only. The published npm entry remains unchanged until native artifacts pass all OS checks. */
 import{spawn}from'node:child_process';import{readFile,lstat}from'node:fs/promises';import{createHash}from'node:crypto';import{fileURLToPath}from'node:url';import path from'node:path';
 try{
  const override=process.env.CBGPU_MCP_NATIVE_BINARY;let binary:string;

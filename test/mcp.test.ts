@@ -18,7 +18,7 @@ async function clientFor(t: TestContext,api: DeploymentClient){const server=crea
 test('MCP discovery, inputs and tools execute through real SDK transport',async t=>{
  const calls: Call[]=[];const client=await clientFor(t,{request:async(...args: Call)=>{calls.push(args);return{projects:[],env_vars:{SECRET:'hidden'}};}});
  const tools=(await client.listTools()).tools;
- assert.equal(tools.length,17);assert.equal(tools.find(t=>t.name==='list_projects')?.annotations?.readOnlyHint,true);
+ assert.equal(tools.length,19);assert.equal(tools.find(t=>t.name==='list_projects')?.annotations?.readOnlyHint,true);
  assert(!tools.some(t=>/shell|sql|delete|password/.test(t.name)));
  const response=await client.callTool({name:'list_projects',arguments:{kind:'frontend'}});
  assert.deepEqual(calls[0],['/projects']);assert(!toolText(response).includes('hidden'));
@@ -41,6 +41,22 @@ test('Compose health failures stay failures; known environment secrets are remov
  const client2=await clientFor(t,{request:async (endpoint: string)=>endpoint.startsWith('/servers/')?{project:{env_vars:{PASSWORD:'super-secret',CBGPU_DEPLOY_ENGINE:'compose'}}}:{status:'error',logs:'DB error super-secret',error:'rest unhealthy'}});
  const result=await client2.callTool({name:'deployment_logs',arguments:{kind:'server',project_id:project}});
  assert(!result.isError);assert(!toolText(result).includes('super-secret'));assert(toolText(result).includes('rest unhealthy'));assert(toolText(result).includes('"error"'));
+});
+test('server terminal lists services and sends only the selected command arguments to the server',async t=>{
+ const calls:Call[]=[];
+ const client=await clientFor(t,{request:async(...args:Call)=>{calls.push(args);return{exit_code:0,stdout:'/opt/data/workspace\n'};}});
+ const {tools}=await client.listTools();
+ assert.equal(tools.find(t=>t.name==='run_server_command')?.annotations?.destructiveHint,true);
+ const listed=await client.callTool({name:'list_server_services',arguments:{project_id:project}});
+ assert(!listed.isError);
+ const cmd={service:'hermes',argv:['pwd'],cwd:'/opt/data/workspace'};
+ const done=await client.callTool({name:'run_server_command',arguments:{project_id:project,...cmd}});
+ assert(!done.isError);
+ assert(toolText(done).includes('/opt/data/workspace'));
+ assert.equal(calls[0][0],'/compose/'+project+'/terminal');
+ assert.deepEqual(calls[1],['/compose/'+project+'/terminal','POST',cmd]);
+ assert.equal((await client.callTool({name:'run_server_command',arguments:{project_id:project,...cmd,uid:0}})).isError,true);
+ assert.equal(calls.length,2);
 });
 test('authorization denial produces a tool error and no mutation',async t=>{
  const calls: Call[]=[];const client=await clientFor(t,{request:async(...args: Call)=>{calls.push(args);return{project:{env_vars:{},collaboration_role:'viewer'}};}});
